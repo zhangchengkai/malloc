@@ -14,7 +14,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-// wssb
+
 #include "mm.h"
 #include "memlib.h"
 
@@ -64,7 +64,7 @@ int Index(int x){
   if(x<=14800) return (x-4561)/512+55;
   if(x<=40400) return (x-14801)/1024+75;
   return 100;
-}// 0~120;
+}
 
 char *head[LIST_SIZE];
 char *tail, *Max;
@@ -100,9 +100,11 @@ void *malloc(size_t size){
     ++xb;
   }
   if(xb < LIST_SIZE){
-    char *p = head[xb];
-    // printf("size need is %d, given %d\n",size,*SIZE_PTR(p)/2);
-    head[xb] = *Next_PTR(head[xb]);
+    char *p = head[xb];    
+    // for(char*q = head[xb]; q != NULL; q = *Next_PTR(q)){
+    //   if(*SIZE_PTR(q) < *SIZE_PTR(p)) p = q;
+    // }
+    del(p);
     *Next_PTR(p) = NULL;
     *SIZE_PTR(p) |= 1;
     split(p,size);
@@ -189,26 +191,23 @@ void free(void *ptr){
  */
 void *realloc(void *oldptr, size_t size)
 {
-  size_t oldsize;
-  void *newptr;
-
   if(size == 0) {
     free(oldptr);
     return 0;
   }
-
   if(oldptr == NULL) return malloc(size);
-
+  if(size <= *SIZE_PTR(oldptr)/2) return oldptr;
   size = ALIGN(size);
-  newptr = malloc(size);
-
-  /* If realloc() fails the original block is left untouched  */
-  if(!newptr) {
-    return 0;
+  if(tail == oldptr){
+    mem_sbrk(size - *SIZE_PTR(oldptr)/2);
+    *SIZE_PTR(oldptr) = size * 2 + 1;
+    return oldptr;
   }
+  void *newptr = malloc(size);
+  if(!newptr) return 0;
 
   /* Copy the old data. */
-  oldsize = *SIZE_PTR(oldptr)/2;
+  size_t oldsize = *SIZE_PTR(oldptr)/2;
   if(size < oldsize) oldsize = size;
   memcpy(newptr, oldptr, oldsize);
 
