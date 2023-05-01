@@ -55,6 +55,7 @@
  */
 #define LIST_SIZE 101
 int Index(int x){
+  return 1;
   if(x<=160) return (x-1)/8;
   if(x<=240) return (x-161)/16+20;
   if(x<=400) return (x-241)/32+25;
@@ -100,15 +101,20 @@ void *malloc(size_t size){
     ++xb;
   }
   if(xb < LIST_SIZE){
-    char *p = head[xb];    
-    // for(char*q = head[xb]; q != NULL; q = *Next_PTR(q)){
-    //   if(*SIZE_PTR(q) < *SIZE_PTR(p)) p = q;
-    // }
-    del(p);
-    *Next_PTR(p) = NULL;
-    *SIZE_PTR(p) |= 1;
-    split(p,size);
-    return p;
+    char *p = NULL;  
+    for(char*q = head[xb]; q != NULL; q = *Next_PTR(q)){
+      if(*SIZE_PTR(q)/2 >= size){
+        p = q;
+        break;
+      }
+    }
+    if(p != NULL){ 
+      del(p);
+      *Next_PTR(p) = NULL;
+      *SIZE_PTR(p) |= 1;
+      split(p,size);
+      return p;
+    }
   }
   char*p = mem_sbrk(newsize);
   //dbg_printf("malloc %u => %p\n", size, p);
@@ -130,13 +136,13 @@ void *malloc(size_t size){
  *      Computers have big memories; surely it won't be a problem.
  */
 void insert_block(char*p){
-  int xb = Index(*SIZE_PTR(p)/2+1)-1;
+  int xb = Index(*SIZE_PTR(p)/2+1);
   // printf("& %d &  ",*SIZE_PTR(p));
   *Next_PTR(p) = head[xb];
   head[xb] = p;
 }
 void del(char*p){
-  int xb = Index(*SIZE_PTR(p)/2+1)-1;
+  int xb = Index(*SIZE_PTR(p)/2+1);
   if(head[xb] == p){
     head[xb] = *Next_PTR(p);
     return;
