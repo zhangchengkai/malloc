@@ -57,7 +57,7 @@
  * mm_init - Called when a new trace starts.
  */
 #define LIST_SIZE 101
-int Index(int x){
+inline int Index(int x){
   // return 1;
   // if(x<=8) return 0;
   // if(x<=16) return 1;
@@ -84,48 +84,38 @@ int Index(int x){
 char *head[LIST_SIZE];
 char *tail, *Max;
 int mm_init(void){
-  // printf("----------%d--------------\n",mem_sbrk(8));
-  // printf("<%d>\n",sizeof(size_t));
   tail = Max = NULL;
   for(int i = 0; i < LIST_SIZE; ++i) head[i] = NULL;
   return 0;
 }
 
-/*
- * malloc - Allocate a block by incrementing the brk pointer.
- *      Always allocate a block whose size is a multiple of the alignment.
- */
-void split(char*p,size_t size){
+inline void split(char*p,size_t size){
   if(*MYSIZE_PTR(p) < size + SIZE_T_SIZE + 8) return;
-  // printf("--------------------------spliting here, %d is needed, we have %d, ??? %d ???-------------------\n",size,*MYSIZE_PTR(p),*MYSIZE_PTR(p) - size - SIZE_T_SIZE);
   char*nxt = p + size + SIZE_T_SIZE;
   char*nnxt = NXT_BLOCK(p);
   *MYSIZE_PTR(nxt) = (*MYSIZE_PTR(p) - size - SIZE_T_SIZE);
-  // printf("split into %d and %d---\n",*MYSIZE_PTR(p),*MYSIZE_PTR(nxt));
   *PRSIZE_PTR(nxt) = size;
   if(nnxt < Max) *PRSIZE_PTR(nnxt) = *MYSIZE_PTR(nxt);
   if(tail == p) tail = nxt;
   *MYSIZE_PTR(p) = size;
-  // printf("split into %d and %d---\n",*MYSIZE_PTR(p),*MYSIZE_PTR(nxt));
   insert_block(nxt);
 }
-void *malloc(size_t size){
+inline void *malloc(size_t size){
   size = ALIGN(size);
-  // printf("%d ",size);
   size_t newsize = size + SIZE_T_SIZE;
   int xb=Index(size+1)-1;
   while(xb < LIST_SIZE && head[xb] == NULL) ++xb;
   if(xb < LIST_SIZE){
     char *p = NULL;
-    while(xb < LIST_SIZE){
-      for(char*q = head[xb]; q != NULL; q = *Nxt_node(q)){
-        if(*MYSIZE_PTR(q) >= size){
-          p = q;
-          break;
-        }
+    for(char*q = head[xb]; q != NULL; q = *Nxt_node(q)){
+      if(*MYSIZE_PTR(q) >= size){
+        p = q;
+        break;
       }
-      if(p == NULL) ++xb;
-      else break;
+    }
+    if(p == NULL){
+      for(++xb;xb<LIST_SIZE && head[xb]==NULL;++xb);
+      if(xb < LIST_SIZE) p = head[xb];
     }
     if(p != NULL){ 
       del(p);
@@ -135,29 +125,22 @@ void *malloc(size_t size){
     }
   }
   char*p = mem_sbrk(newsize);
-  if ((long)p < 0) return NULL;
-  else {
-    Max = p + newsize;
-    p += SIZE_T_SIZE;
-    *MYSIZE_PTR(p) = size | 1;
-    if(tail != NULL) *PRSIZE_PTR(p) = (*MYSIZE_PTR(tail))/2*2;
-    else *PRSIZE_PTR(p) = 0;
-    tail = p;
-    return p;
-  }
+  Max = p + newsize;
+  p += SIZE_T_SIZE;
+  *MYSIZE_PTR(p) = size | 1;
+  if(tail != NULL) *PRSIZE_PTR(p) = (*MYSIZE_PTR(tail))/2*2;
+  else *PRSIZE_PTR(p) = 0;
+  tail = p;
+  return p;
 }
 
-/*
- * free - We don't know how to free a block.  So we ignore this call.
- *      Computers have big memories; surely it won't be a problem.
- */
-void insert_block(char*p){
+
+inline void insert_block(char*p){
   int xb = Index(*MYSIZE_PTR(p)+1)-1;
-  // printf("& %d &  ",sizeof(int));
   *Nxt_node(p) = head[xb];
   head[xb] = p;
 }
-void del(char*p){
+inline void del(char*p){
   int xb = Index(*MYSIZE_PTR(p)+1)-1;
   if(head[xb] == p){
     head[xb] = *Nxt_node(p);
@@ -171,7 +154,7 @@ void del(char*p){
   }
   printf("something goes wrong here in line 164\n");
 }
-void merge(char*p){
+inline void merge(char*p){
   while(*PRSIZE_PTR(p) > 0 && !IS_USED(PRE_BLOCK(p))){
     char* Pre = PRE_BLOCK(p);
     char* nxt = NXT_BLOCK(p);
@@ -181,7 +164,6 @@ void merge(char*p){
     if(tail == p) tail = Pre;
     p = Pre;
   }
-  // printf("left merge end....   ");
   while(NXT_BLOCK(p) < Max && !IS_USED(NXT_BLOCK(p))){
     char* nxt = NXT_BLOCK(p);
     char* nnxt = NXT_BLOCK(nxt);
@@ -190,17 +172,13 @@ void merge(char*p){
     *MYSIZE_PTR(p) += *MYSIZE_PTR(nxt) + SIZE_T_SIZE;
     if(nnxt < Max) *PRSIZE_PTR(nnxt) = *MYSIZE_PTR(p);
   }
-  // printf("right merge end....   ");
   insert_block(p);
 }
 void free(void *ptr){
-  // printf("free begin here-----------------          ");
   char* p = ptr;
   if(p == NULL) return;
   *MYSIZE_PTR(p) -= 1;
-  // printf("size p is %d, merge ing.........    ",*MYSIZE_PTR(p));
   merge(p);
-  // printf("OK\n");
 }
 
 /*
