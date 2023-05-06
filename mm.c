@@ -58,7 +58,7 @@
  */
 #define LIST_SIZE 101
 inline int Index(int x){
-  return 1;
+  // return 1;
   // if(x<=8) return 0;
   // if(x<=16) return 1;
   // if(x<=32) return 2;
@@ -70,15 +70,15 @@ inline int Index(int x){
   // if(x<=16384) return 8;
   // if(x<=65536) return 9;
   // return 10;
-  // if(x<=160) return (x-1)/8;
-  // if(x<=240) return (x-161)/16+20;
-  // if(x<=400) return (x-241)/32+25;
-  // if(x<=720) return (x-401)/64+30;
-  // if(x<=2000) return (x-721)/128+35;
-  // if(x<=4560) return (x-2001)/256+45;
-  // if(x<=14800) return (x-4561)/512+55;
-  // if(x<=40400) return (x-14801)/1024+75;
-  // return 100;
+  if(x<=160) return (x-1)/8;
+  if(x<=240) return (x-161)/16+20;
+  if(x<=400) return (x-241)/32+25;
+  if(x<=720) return (x-401)/64+30;
+  if(x<=2000) return (x-721)/128+35;
+  if(x<=4560) return (x-2001)/256+45;
+  if(x<=14800) return (x-4561)/512+55;
+  if(x<=40400) return (x-14801)/1024+75;
+  return 100;
 }
 
 char *head[LIST_SIZE];
@@ -106,8 +106,8 @@ inline void *malloc(size_t size){
   int xb=Index(size+1)-1;
   while(xb < LIST_SIZE && head[xb] == NULL) ++xb;
   if(xb < LIST_SIZE){
-    char *p = NULL;
-    for(char*q = head[xb]; q != NULL; q = *Nxt_node(q)){
+    char *p = NULL;int tt=10;
+    for(char*q = head[xb]; q != NULL && --tt; q = *Nxt_node(q)){
       if(*MYSIZE_PTR(q) >= size){
         p = q;
         break;
