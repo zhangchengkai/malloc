@@ -58,18 +58,18 @@
  */
 #define LIST_SIZE 101
 inline int Index(int x){
-  // return 1;
-  if(x<=8) return 0;
-  if(x<=16) return 1;
-  if(x<=32) return 2;
-  if(x<=64) return 3;
-  if(x<=256) return 4;
-  if(x<=1024) return 5;
-  if(x<=2048) return 6;
-  if(x<=8192) return 7;
-  if(x<=16384) return 8;
-  if(x<=65536) return 9;
-  return 10;
+  return 1;
+  // if(x<=8) return 0;
+  // if(x<=16) return 1;
+  // if(x<=32) return 2;
+  // if(x<=64) return 3;
+  // if(x<=256) return 4;
+  // if(x<=1024) return 5;
+  // if(x<=2048) return 6;
+  // if(x<=8192) return 7;
+  // if(x<=16384) return 8;
+  // if(x<=65536) return 9;
+  // return 10;
   // if(x<=160) return (x-1)/8;
   // if(x<=240) return (x-161)/16+20;
   // if(x<=400) return (x-241)/32+25;
