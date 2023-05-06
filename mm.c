@@ -106,7 +106,7 @@ inline void *malloc(size_t size){
   int xb=Index(size+1)-1;
   while(xb < LIST_SIZE && head[xb] == NULL) ++xb;
   if(xb < LIST_SIZE){
-    char *p = NULL;int tt=10;
+    char *p = NULL;int tt=5;
     for(char*q = head[xb]; q != NULL && --tt; q = *Nxt_node(q)){
       if(*MYSIZE_PTR(q) >= size){
         p = q;
